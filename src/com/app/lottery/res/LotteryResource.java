@@ -251,8 +251,8 @@ public class LotteryResource {
 		if (cat_id == 0)
 			cat_id = 1;
 		try {
-			JSONObject arr = new LotoDAO().getLotoByDay(weeks, day, cat_id);
-			json.put("val", arr);
+			JSONArray arr = new LotoDAO().getLotoByDay(weeks, day, cat_id);
+			json.put("content", arr);
 			json.put("status", 1);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -268,11 +268,14 @@ public class LotteryResource {
 	@GET
 	@Path("/analytics/quick_analytics")
 	@Produces(MediaType.TEXT_HTML)
-	public String quickAnalytics(@QueryParam("start_date") String date, @QueryParam("value") String value) {
+	public String quickAnalytics(@QueryParam("start_date") String date, @QueryParam("value") String value,
+			@QueryParam(ExtParamsKey.CATE_ID) int cat_id) {
 		JSONObject json = new JSONObject();
 		try {
+			if (cat_id == 0)
+				cat_id = 1;
 			LotoDAO dao = new LotoDAO();
-			json.put("val", dao.quick_analytics(date, value));
+			json.put("content", dao.quick_analytics(date, value, cat_id));
 			json.put("status", 1);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -289,10 +292,13 @@ public class LotteryResource {
 	@Path("/analytics/thong_ke_tong")
 	@Produces(MediaType.TEXT_HTML)
 	public String thong_ke_theo_tong(@QueryParam(ExtParamsKey.TIME_START) String time_start,
-			@QueryParam(ExtParamsKey.TIME_END) String time_end, @QueryParam("tong") String tong) {
+			@QueryParam(ExtParamsKey.TIME_END) String time_end, @QueryParam("tong") String tong,
+			@QueryParam(ExtParamsKey.CATE_ID) int cate_id) {
 		JSONObject json = new JSONObject();
 		try {
-			json.put("val", new LotoDAO().get_tong(time_start, time_end, tong));
+			if (cate_id == 0)
+				cate_id = 1;
+			json.put("content", new LotoDAO().get_tong(time_start, time_end, tong, cate_id));
 			json.put("status", 1);
 		} catch (Exception e) {
 			e.printStackTrace();

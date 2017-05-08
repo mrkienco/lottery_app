@@ -130,7 +130,7 @@ public class LotoDAO extends BaseDao {
 		return null;
 	}
 
-	public JSONObject getLotoByDay(int weeks, int day, int cat_id) throws JSONException {
+	public JSONArray getLotoByDay(int weeks, int day, int cat_id) throws JSONException {
 		long k = (long) (weeks * 7) * 86400000;
 		DateTimeFormatter pattern = DateTimeFormat.forPattern("yyyy-MM-dd");
 		DateTime startDate = pattern.parseDateTime(TimeUtils.getTimeString(System.currentTimeMillis() - k, true));
@@ -146,7 +146,7 @@ public class LotoDAO extends BaseDao {
 
 		Session session = getSession();
 		session.beginTransaction();
-		JSONObject js = new JSONObject();
+		JSONArray json = new JSONArray();
 		List<Object[]> list = new ArrayList<>();
 		String sql = "SELECT value, count(id) FROM loto WHERE date(gen_date) IN (";
 		for (int i = 0; i < days.size(); i++) {
@@ -155,21 +155,23 @@ public class LotoDAO extends BaseDao {
 			sql += "'" + days.get(i) + "'";
 		}
 		sql += ") GROUP BY value ORDER BY count(id) DESC";
-		System.out.println(sql);
 		SQLQuery q = session.createSQLQuery(sql);
 		list = q.list();
 		for (int i = 0; i < list.size(); i++) {
 			String code = (String) list.get(i)[0];
-			int val = ((Number) list.get(i)[1]).intValue();
-			js.put(code, val);
+			int count = ((Number) list.get(i)[1]).intValue();
+			JSONObject js = new JSONObject();
+			js.put("n", count);
+			js.put("l", code);
+			json.put(js);
 		}
-		return js;
+		return json;
 	}
 
-	public JSONObject quick_analytics(String date, String value) throws Exception {
+	public JSONArray quick_analytics(String date, String value, int cat_id) throws Exception {
 		Session session = getSession();
 		session.beginTransaction();
-		JSONObject json = new JSONObject();
+		JSONArray array = new JSONArray();
 		String[] vals = {};
 		if (value != null)
 			vals = value.split(",");
@@ -183,11 +185,12 @@ public class LotoDAO extends BaseDao {
 		}
 		String day1 = TimeUtils.getTimeString(day.getTime(), true);
 		String sql = "SELECT value, count(id), max(gen_date) FROM loto WHERE date(gen_date) >= '" + day1
-				+ "' AND cat_id = 1 AND date(gen_date) <= '" + TimeUtils.getTimeString(System.currentTimeMillis(), true)
+				+ "' AND cat_id = " + cat_id + " AND date(gen_date) <= '"
+				+ TimeUtils.getTimeString(System.currentTimeMillis(), true)
 				+ "' GROUP BY value ORDER BY count(id) DESC";
 		if (vals.length > 0) {
 			sql = "SELECT value, count(id), max(gen_date) FROM loto WHERE date(gen_date) >= '" + day1
-					+ "' AND cat_id = 1 AND date(gen_date) <= '"
+					+ "' AND cat_id = " + cat_id + " AND date(gen_date) <= '"
 					+ TimeUtils.getTimeString(System.currentTimeMillis(), true) + "' AND ";
 			for (int i = 0; i < vals.length; i++) {
 				if (i > 0)
@@ -205,18 +208,43 @@ public class LotoDAO extends BaseDao {
 			String code = (String) list.get(i)[0];
 			int count = ((Number) list.get(i)[1]).intValue();
 			String time = df.format(list.get(i)[2]);
-			value_json.put("c", count);
+			value_json.put("n", count);
 			value_json.put("t", time);
-			json.put(code, value_json);
+			value_json.put("l", code);
+			array.put(value_json);
 		}
 
-		return json;
+		return array;
 	}
 
-	public JSONObject get_tong(String time_start, String time_end, String tong) {
-		JSONObject json = new JSONObject();
-		List<String> list = AnalyticsUtils.cac_so_co_tong_la(Integer.parseInt(tong));
-		String sql = 
-		return json;
+	public JSONArray get_tong(String time_start, String time_end, String tong, int cat_id) throws JSONException {
+		List<String> _list = AnalyticsUtils.cac_so_co_tong_la(Integer.parseInt(tong));
+		String sql = "SELECT count(id), value, max(gen_date) FROM loto WHERE cat_id = " + cat_id
+				+ " AND date(gen_date) > '" + time_start + "' AND date(gen_date) < '" + time_end + "' AND (";
+		for (int i = 0; i < _list.size(); i++) {
+			if (i > 0)
+				sql += " OR ";
+			sql += " value = '" + _list.get(i) + "'";
+		}
+		sql += ") group by value order by value";
+		Session session = getSession();
+		session.beginTransaction();
+		JSONArray array = new JSONArray();
+		SQLQuery q = session.createSQLQuery(sql);
+		List<Object[]> list = q.list();
+		q = session.createSQLQuery(sql);
+		list = q.list();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		for (int i = 0; i < list.size(); i++) {
+			int count = ((Number) list.get(i)[0]).intValue();
+			String code = (String) list.get(i)[1];
+			String time = df.format(list.get(i)[2]);
+			JSONObject js = new JSONObject();
+			js.put("n", count);
+			js.put("t", time);
+			js.put("l", code);
+			array.put(js);
+		}
+		return array;
 	}
 }
