@@ -247,4 +247,30 @@ public class LotoDAO extends BaseDao {
 		}
 		return array;
 	}
+
+	public JSONArray thong_ke_ngay_mai(String time_start, String time_end, int cate_id, String code)
+			throws JSONException {
+		String sql = "select gen_date, value from aia_lottery.lottery where gen_date >= '" + time_start
+				+ " 00:00:01' and gen_date <='" + time_end + " 23:59:59' and cat_id = " + cate_id
+				+ " and rank = 0 and date(gen_date) IN (select date(DATE_ADD(gen_date,INTERVAL 1 DAY) ) from aia_lottery.lottery where value like '%"
+				+ code + "' and gen_date >= '" + time_start + " 00:00:01' and gen_date <='" + time_end
+				+ " 23:59:59' and cat_id = " + cate_id + " and rank = 0)";
+		Session session = getSession();
+		session.beginTransaction();
+		JSONArray array = new JSONArray();
+		SQLQuery q = session.createSQLQuery(sql);
+		List<Object[]> list = q.list();
+		q = session.createSQLQuery(sql);
+		list = q.list();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		for (int i = 0; i < list.size(); i++) {
+			String date = df.format(list.get(i)[0]);
+			String _code = (String) list.get(i)[1];
+			JSONObject js = new JSONObject();
+			js.put("l", _code);
+			js.put("t", date);
+			array.put(js);
+		}
+		return array;
+	}
 }

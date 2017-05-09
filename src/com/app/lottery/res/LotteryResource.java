@@ -311,6 +311,29 @@ public class LotteryResource {
 		return json.toString();
 	}
 
+	@GET
+	@Path("/analytics/thong_ke_ngay_mai")
+	@Produces(MediaType.TEXT_HTML)
+	public String thong_ke_ngay_mai(@QueryParam(ExtParamsKey.TIME_START) String time_start,
+			@QueryParam(ExtParamsKey.TIME_END) String time_end, @QueryParam(ExtParamsKey.CATE_ID) int cate_id,
+			@QueryParam("code") String code) {
+		JSONObject json = new JSONObject();
+		try {
+			if (cate_id == 0)
+				cate_id = 1;
+			json.put("content", new LotoDAO().thong_ke_ngay_mai(time_start, time_end, cate_id, code));
+			json.put("status", 1);
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				json.put("status", 0);
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+		}
+		return json.toString();
+	}
+
 	// ========================================================
 	// PRIVATE METHOD
 	// ========================================================
