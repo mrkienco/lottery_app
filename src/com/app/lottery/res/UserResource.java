@@ -49,6 +49,16 @@ public class UserResource {
     			return json.toString();
     		}
     		UserManagerDAO userDAO = new UserManagerDAO();
+    		UserManager userCheck = userDAO.getUserManager(device_id);
+    		if (userCheck != null) {
+    			//User da co nick roi
+    			json = buildErrorRes(RequestStatus.SUCCES);
+    			json.put(ExtParamsKey.ID, userCheck.getId());
+    			json.put(ExtParamsKey.USER_NAME, userCheck);
+    			json.put(ExtParamsKey.TITLE, userCheck);
+    			return json.toString();
+    		}
+    		//Dang ky user moi
     		UserManager userManager = new UserManager();
     		userManager.setPlatform(platform);
     		userManager.setReg_type(Constant.RegType.NORMAL);
@@ -64,7 +74,7 @@ public class UserResource {
     		userDAO.insertUserManager(userManager);
     		//
     		UserManager userInserted = userDAO.getUserManager(device_id);
-    		if (userInserted != null) {
+    		if (userInserted == null) {
     			json = buildErrorRes(RequestStatus.FAIL);
     		} else {
     			json = buildErrorRes(RequestStatus.SUCCES);

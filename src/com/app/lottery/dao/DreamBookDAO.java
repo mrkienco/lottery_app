@@ -32,6 +32,9 @@ public class DreamBookDAO extends BaseDao {
 			session.getTransaction().commit();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		} finally {
+			session.flush();
+			session.close();
 		}
 		return list;
 	}
@@ -48,6 +51,9 @@ public class DreamBookDAO extends BaseDao {
 			session.getTransaction().commit();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		} finally {
+			session.flush();
+			session.close();
 		}
 		return number;
 	}

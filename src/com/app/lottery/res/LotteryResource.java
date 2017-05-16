@@ -316,12 +316,34 @@ public class LotteryResource {
 	@Produces(MediaType.TEXT_HTML)
 	public String thong_ke_ngay_mai(@QueryParam(ExtParamsKey.TIME_START) String time_start,
 			@QueryParam(ExtParamsKey.TIME_END) String time_end, @QueryParam(ExtParamsKey.CATE_ID) int cate_id,
-			@QueryParam("code") String code) {
+			@QueryParam(ExtParamsKey.CODE) String code) {
 		JSONObject json = new JSONObject();
 		try {
 			if (cate_id == 0)
 				cate_id = 1;
 			json.put("content", new LotoDAO().thong_ke_ngay_mai(time_start, time_end, cate_id, code));
+			json.put("status", 1);
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				json.put("status", 0);
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+		}
+		return json.toString();
+	}
+
+	@GET
+	@Path("/soi_cau")
+	@Produces(MediaType.TEXT_HTML)
+	public String soi_cau(@QueryParam(ExtParamsKey.TIME_START) String time_start,
+			@QueryParam(ExtParamsKey.TIME_END) String time_end, @QueryParam(ExtParamsKey.CATE_ID) int cate_id) {
+		JSONObject json = new JSONObject();
+		if (cate_id == 0)
+			cate_id = 1;
+		try {
+			json.put("content", new LotteryDAO().soi_cau(time_start, time_end, cate_id));
 			json.put("status", 1);
 		} catch (Exception e) {
 			e.printStackTrace();
