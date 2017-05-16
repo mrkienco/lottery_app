@@ -182,7 +182,7 @@ public class LotoDAO extends BaseDao {
 		return json;
 	}
 
-	public JSONArray quick_analytics(String date, String value, int cat_id) {
+	public JSONArray quick_analytics(String start_date, String end_date, String value, int cat_id) {
 		Session session = getSession();
 		JSONArray array = new JSONArray();
 		try {
@@ -190,29 +190,24 @@ public class LotoDAO extends BaseDao {
 			if (value != null)
 				vals = value.split(",");
 
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			Date day = null;
-			day = df.parse(date);
-			String day1 = TimeUtils.getTimeString(day.getTime(), true);
-			String sql = "SELECT value, count(id), max(gen_date) FROM loto WHERE date(gen_date) >= '" + day1
-					+ "' AND cat_id = " + cat_id + " AND date(gen_date) <= '"
-					+ TimeUtils.getTimeString(System.currentTimeMillis(), true)
+			String sql = "SELECT value, count(id), max(gen_date) FROM loto WHERE date(gen_date) >= '" + start_date
+					+ "' AND cat_id = " + cat_id + " AND date(gen_date) <= '" + end_date
 					+ "' GROUP BY value ORDER BY count(id) DESC";
 			if (vals.length > 0) {
-				sql = "SELECT value, count(id), max(gen_date) FROM loto WHERE date(gen_date) >= '" + day1
-						+ "' AND cat_id = " + cat_id + " AND date(gen_date) <= '"
-						+ TimeUtils.getTimeString(System.currentTimeMillis(), true) + "' AND ";
+				sql = "SELECT value, count(id), max(gen_date) FROM loto WHERE date(gen_date) >= '" + start_date
+						+ "' AND cat_id = " + cat_id + " AND date(gen_date) <= '" + end_date + "' AND (";
 				for (int i = 0; i < vals.length; i++) {
 					if (i > 0)
 						sql += " OR ";
 					sql += " value = '" + vals[i] + "'";
 				}
-				sql += " GROUP BY value ORDER BY count(id) DESC";
+				sql += ") GROUP BY value ORDER BY count(id) DESC";
 			}
 			session.beginTransaction();
 			SQLQuery q = session.createSQLQuery(sql);
 			List<Object[]> list = q.list();
 			list = q.list();
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			for (int i = 0; i < list.size(); i++) {
 				JSONObject value_json = new JSONObject();
 				String code = (String) list.get(i)[0];

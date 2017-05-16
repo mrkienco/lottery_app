@@ -268,14 +268,14 @@ public class LotteryResource {
 	@GET
 	@Path("/analytics/quick_analytics")
 	@Produces(MediaType.TEXT_HTML)
-	public String quickAnalytics(@QueryParam("start_date") String date, @QueryParam("value") String value,
-			@QueryParam(ExtParamsKey.CATE_ID) int cat_id) {
+	public String quickAnalytics(@QueryParam("start_date") String start_date, @QueryParam("end_date") String end_date,
+			@QueryParam("value") String value, @QueryParam(ExtParamsKey.CATE_ID) int cat_id) {
 		JSONObject json = new JSONObject();
 		try {
 			if (cat_id == 0)
 				cat_id = 1;
 			LotoDAO dao = new LotoDAO();
-			json.put("content", dao.quick_analytics(date, value, cat_id));
+			json.put("content", dao.quick_analytics(start_date, end_date, value, cat_id));
 			json.put("status", 1);
 		} catch (Exception e) {
 			e.printStackTrace();
